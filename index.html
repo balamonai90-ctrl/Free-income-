@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Income - Earn Daily</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-color: #2e7d32; --secondary-color: #4caf50; --bg-color: #f1f8e9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: #333; }
+        
+        /* Header */
+        header { background: var(--primary-color); color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* Notice */
+        #notice { background: #fff; border-left: 5px solid #d32f2f; margin: 15px; padding: 12px; border-radius: 8px; font-size: 14px; color: #d32f2f; font-weight: 600; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* Balance Card */
+        .balance-card { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; margin: 20px; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3); }
+        .balance-card h3 { margin: 0; font-size: 16px; opacity: 0.9; }
+        .balance-card h1 { margin: 10px 0; font-size: 42px; }
+
+        /* Main Section Container */
+        .content { padding: 10px 20px 100px 20px; }
+        .section { display: none; animation: fadeIn 0.5s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Buttons & Tasks */
+        .task-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border: 1px solid #e0e0e0; }
+        .task-info h4 { margin: 0; color: var(--primary-color); }
+        .btn-action { background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-action:active { transform: scale(0.95); }
+
+        /* Form Controls */
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+
+        /* Bottom Nav */
+        .navbar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); border-top-left-radius: 20px; border-top-right-radius: 20px; }
+        .nav-item { text-align: center; color: #757575; cursor: pointer; font-size: 12px; transition: 0.3s; flex: 1; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
+        .nav-item.active-nav { color: var(--primary-color); }
+
+        /* Timer Overlay */
+        #timer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--secondary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<header>FREE INCOME</header>
+<div id="notice"></div>
+
+<div class="content">
+    <!-- Home Section -->
+    <div id="home" class="section active">
+        <div class="balance-card">
+            <h3>Current Balance</h3>
+            <h1>৳ <span id="user-balance">0</span></h1>
+            <p>আপনার অ্যাকাউন্টটি সুরক্ষিত আছে</p>
+        </div>
+        <div class="task-card">
+            <div class="task-info">
+                <h4>Daily Reward</h4>
+                <p>ক্লিক করে প্রতিদিন ১০ টাকা নিন</p>
+            </div>
+            <button class="btn-action" onclick="showSection('bonus')">Claim</button>
+        </div>
+    </div>
+
+    <!-- Earn Section -->
+    <div id="earn" class="section">
+        <h3 style="color:var(--primary-color)">Earning Tasks</h3>
+        <div class="task-card">
+            <div class="task-info">
+                <h4>এড দেখে ইনকাম</h4>
+                <p>১০ সেকেন্ড অ্যাড দেখুন = ২০ টাকা</p>
+            </div>
+            <button class="btn-action" onclick="startAdTask()">Start</button>
+        </div>
+        <div class="task-card">
+            <div class="task-info">
+                <h4>বেশি ইনকাম</h4>
+                <p>আনলিমিটেড ক্লিক ও আর্নিং</p>
+            </div>
+            <button class="btn-action" style="background:#ff9800" onclick="window.location.href='https://www.profitablecpmratenetwork.com/krb8sq6kv?key=d24b12adad1932001398d137c9e6fa0c'">Visit</button>
+        </div>
+    </div>
+
+    <!-- Bonus Section -->
+    <div id="bonus" class="section">
+        <div class="balance-card" style="background: #558b2f;">
+            <i class="fas fa-gift" style="font-size: 50px;"></i>
+            <h2>ডেইলি বোনাস</h2>
+            <button class="btn-action" style="background:white; color:#558b2f; width:100%" onclick="claimBonus()">বোনাস সংগ্রহ করুন</button>
+        </div>
+    </div>
+
+    <!-- Withdraw Section -->
+    <div id="withdraw" class="section">
+        <div class="task-card" style="display:block">
+            <h4 style="margin-bottom:15px">টাকা উত্তোলন করুন</h4>
+            <select id="method">
+                <option value="Bkash">Bkash (বিকাশ)</option>
+                <option value="Nagad">Nagad (নগদ)</option>
+                <option value="Rocket">Rocket (রকেট)</option>
+            </select>
+            <input type="number" id="amount" placeholder="টাকার পরিমাণ (মিনিমাম ৫০)">
+            <input type="text" id="phone" placeholder="আপনার একাউন্ট নাম্বার">
+            <button class="btn-action" style="width:100%; margin-top:10px" onclick="handleWithdraw()">উইথড্র রিকোয়েস্ট পাঠান</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="navbar">
+    <div class="nav-item active-nav" id="n-home" onclick="navClick('home')"><i class="fas fa-home"></i>হোম</div>
+    <div class="nav-item" id="n-earn" onclick="navClick('earn')"><i class="fas fa-money-bill-wave"></i>আর্ন</div>
+    <div class="nav-item" onclick="window.location.href='https://t.me/freeincomesupport0'"><i class="fas fa-headset"></i>সাপোর্ট</div>
+    <div class="nav-item" id="n-bonus" onclick="navClick('bonus')"><i class="fas fa-gift"></i>বোনাস</div>
+    <div class="nav-item" id="n-withdraw" onclick="navClick('withdraw')"><i class="fas fa-wallet"></i>উইথড্র</div>
+</div>
+
+<!-- Ad Timer Overlay -->
+<div id="timer-overlay">
+    <div class="loader"></div>
+    <h3>অ্যাড লোড হচ্ছে...</h3>
+    <h1 id="countdown" style="font-size: 60px; color: var(--secondary-color);">10</h1>
+    <p>দয়া করে অপেক্ষা করুন</p>
+</div>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+  apiKey: "AIzaSyBYcT_KxokNS5q6ozuCfZaIyR8qeKP6FnQ",
+  authDomain: "free-income-hub.firebaseapp.com",
+  databaseURL: "https://free-income-hub-default-rtdb.firebaseio.com",
+  projectId: "free-income-hub",
+  storageBucket: "free-income-hub.firebasestorage.app",
+  messagingSenderId: "198778189657",
+  appId: "1:198778189657:web:474e3d1ce693c0b344fe48",
+  measurementId: "G-754Q9CVG2B"
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // User Identification (No Login)
+    let userId = localStorage.getItem('free_income_uid') || 'ID' + Math.floor(100000 + Math.random() * 900000);
+    localStorage.setItem('free_income_uid', userId);
+
+    let currentBalance = 0;
+
+    // Load Live Data
+    function initApp() {
+        db.ref('users/' + userId).on('value', (snap) => {
+            const data = snap.val();
+            if(data) {
+                currentBalance = data.balance || 0;
+                document.getElementById('user-balance').innerText = currentBalance;
+            } else {
+                db.ref('users/' + userId).set({ balance: 0, lastBonus: "" });
+            }
+        });
+
+        db.ref('notice').on('value', (snap) => {
+            const noticeBox = document.getElementById('notice');
+            if(snap.val()) {
+                noticeBox.innerText = snap.val();
+                noticeBox.style.display = 'block';
+            } else {
+                noticeBox.style.display = 'none';
+            }
+        });
+    }
+
+    function navClick(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('n-' + id).classList.add('active-nav');
+    }
+
+    function showSection(id) { navClick(id); }
+
+    // Earn Money Logic (Fixed Balance Issue)
+    function startAdTask() {
+        document.getElementById('timer-overlay').style.display = 'flex';
+        let count = 10;
+        let timer = setInterval(() => {
+            count--;
+            document.getElementById('countdown').innerText = count;
+            if(count <= 0) {
+                clearInterval(timer);
+                document.getElementById('timer-overlay').style.display = 'none';
+                
+                // Update Balance in Firebase
+                db.ref('users/' + userId + '/balance').transaction((current) => {
+                    return (current || 0) + 20;
+                }).then(() => {
+                    alert("অভিনন্দন! আপনি ২০ টাকা পেয়েছেন।");
+                });
+                document.getElementById('countdown').innerText = "10";
+            }
+        }, 1000);
+    }
+
+    // Daily Bonus Logic
+    function claimBonus() {
+        let today = new Date().toDateString();
+        db.ref('users/' + userId).once('value', (snap) => {
+            let data = snap.val();
+            if(data.lastBonus === today) {
+                alert("দুঃখিত! আপনি আজকের বোনাস নিয়ে ফেলেছেন। আগামীকাল আবার চেষ্টা করুন।");
+            } else {
+                db.ref('users/' + userId).update({
+                    balance: currentBalance + 10,
+                    lastBonus: today
+                });
+                alert("সফল! আপনার একাউন্টে ১০ টাকা বোনাস যোগ করা হয়েছে।");
+            }
+        });
+    }
+
+    // Withdraw Logic
+    function handleWithdraw() {
+        let amount = parseInt(document.getElementById('amount').value);
+        let phone = document.getElementById('phone').value;
+        let method = document.getElementById('method').value;
+
+        if(!phone || amount < 50) {
+            alert("সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ৫০ টাকা।");
+            return;
+        }
+
+        if(amount > currentBalance) {
+            alert("আপনার ব্যালেন্স পর্যাপ্ত নয়।");
+            return;
+        }
+
+        // Add request to database
+        db.ref('withdrawals').push({
+            userId: userId,
+            amount: amount,
+            phone: phone,
+            method: method,
+            status: 'pending',
+            time: new Date().toLocaleString()
+        });
+
+        // Deduct balance
+        db.ref('users/' + userId).update({ balance: currentBalance - amount });
+
+        alert("আপনার উইথড্র সাকসেস!");
+        setTimeout(() => {
+            alert("২ ঘণ্টার মধ্যে আপনি পেমেন্ট পেয়ে যাবেন। আমাদের সাথেই থাকুন।");
+        }, 1500);
+    }
+
+    initApp();
+</script>
+
+</body>
+</html>
