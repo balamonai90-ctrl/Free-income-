@@ -14,8 +14,11 @@
         /* Header */
         header { background: var(--primary-color); color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* Notice */
+        /* Notice & Popup */
         #notice { background: #fff; border-left: 5px solid #d32f2f; margin: 15px; padding: 12px; border-radius: 8px; font-size: 14px; color: #d32f2f; font-weight: 600; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #popup-notice-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
+        .popup-box { background: white; width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: scaleUp 0.3s ease; }
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* Balance Card */
         .balance-card { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; margin: 20px; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3); }
@@ -43,16 +46,27 @@
         .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
         .nav-item.active-nav { color: var(--primary-color); }
 
-        /* Timer Overlay */
-        #timer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--secondary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Ad Overlay */
+        #ad-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; display: none; flex-direction: column; z-index: 9999; }
+        .ad-container { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; overflow: hidden; }
+        .ad-footer { background: #f1f1f1; padding: 20px; text-align: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
+        .btn-continue { background: #000; color: #ccff00; border: none; padding: 15px 30px; font-size: 22px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; font-family: 'Arial Black', sans-serif; }
     </style>
 </head>
 <body>
 
 <header>FREE INCOME</header>
 <div id="notice"></div>
+
+<!-- Popup Notice -->
+<div id="popup-notice-overlay">
+    <div class="popup-box">
+        <i class="fas fa-bell" style="font-size: 40px; color: #f39c12; margin-bottom: 15px;"></i>
+        <h3 style="margin-top: 0;">গুরুত্বপূর্ণ নোটিশ</h3>
+        <p id="popup-text" style="color: #555; font-size: 15px;"></p>
+        <button class="btn-action" style="width: 100%; margin-top: 10px;" onclick="closePopup()">OK</button>
+    </div>
+</div>
 
 <div class="content">
     <!-- Home Section -->
@@ -77,9 +91,10 @@
         <div class="task-card">
             <div class="task-info">
                 <h4>এড দেখে ইনকাম</h4>
-                <p>১০ সেকেন্ড অ্যাড দেখুন = ২০ টাকা</p>
+                <p>১০ সেকেন্ড অ্যাড দেখুন = ৫ টাকা</p>
             </div>
-            <button class="btn-action" onclick="startAdTask()">Start</button>
+            <!-- Watch Ad in English -->
+            <button class="btn-action" onclick="startAdTask()">Watch Ad</button>
         </div>
         <div class="task-card">
             <div class="task-info">
@@ -108,7 +123,10 @@
                 <option value="Nagad">Nagad (নগদ)</option>
                 <option value="Rocket">Rocket (রকেট)</option>
             </select>
-            <input type="number" id="amount" placeholder="টাকার পরিমাণ (মিনিমাম ৫০)">
+            <!-- Name Field Added -->
+            <input type="text" id="userName" placeholder="আপনার পুরো নাম">
+            <!-- Minimum 1000 -->
+            <input type="number" id="amount" placeholder="টাকার পরিমাণ (মিনিমাম ১০০০)">
             <input type="text" id="phone" placeholder="আপনার একাউন্ট নাম্বার">
             <button class="btn-action" style="width:100%; margin-top:10px" onclick="handleWithdraw()">উইথড্র রিকোয়েস্ট পাঠান</button>
         </div>
@@ -119,39 +137,52 @@
 <div class="navbar">
     <div class="nav-item active-nav" id="n-home" onclick="navClick('home')"><i class="fas fa-home"></i>হোম</div>
     <div class="nav-item" id="n-earn" onclick="navClick('earn')"><i class="fas fa-money-bill-wave"></i>আর্ন</div>
-    <div class="nav-item" onclick="window.location.href='https://t.me/freeincomesupport0'"><i class="fas fa-headset"></i>সাপোর্ট</div>
+    <!-- Support Links updated -->
+    <div class="nav-item" onclick="window.location.href='https://t.me/Balamofficial'"><i class="fas fa-headset"></i>সাপোর্ট</div>
     <div class="nav-item" id="n-bonus" onclick="navClick('bonus')"><i class="fas fa-gift"></i>বোনাস</div>
     <div class="nav-item" id="n-withdraw" onclick="navClick('withdraw')"><i class="fas fa-wallet"></i>উইথড্র</div>
 </div>
 
-<!-- Ad Timer Overlay -->
-<div id="timer-overlay">
-    <div class="loader"></div>
-    <h3>অ্যাড লোড হচ্ছে...</h3>
-    <h1 id="countdown" style="font-size: 60px; color: var(--secondary-color);">10</h1>
-    <p>দয়া করে অপেক্ষা করুন</p>
+<!-- Ad Overlay Fullscreen -->
+<div id="ad-overlay">
+    <div class="ad-container">
+        <!-- Ad Network Code -->
+        <script>
+            atOptions = {
+              'key' : 'f5a8d3ec6945fc213f03073db24c8588',
+              'format' : 'iframe',
+              'height' : 600,
+              'width' : 160,
+              'params' : {}
+            };
+        </script>
+        <script src="https://www.highperformanceformat.com/f5a8d3ec6945fc213f03073db24c8588/invoke.js"></script>
+    </div>
+    <div class="ad-footer">
+        <h2 id="ad-timer" style="color: red; margin:0;">Wait <span id="countdown">10</span>s...</h2>
+        <button id="ad-continue" class="btn-continue" style="display:none;" onclick="finishAd()">কন্টিনিউ</button>
+    </div>
 </div>
 
 <script>
-    // Firebase Configuration
+    // Firebase Configuration (Unchanged)
     const firebaseConfig = {
-  apiKey: "AIzaSyBYcT_KxokNS5q6ozuCfZaIyR8qeKP6FnQ",
-  authDomain: "free-income-hub.firebaseapp.com",
-  databaseURL: "https://free-income-hub-default-rtdb.firebaseio.com",
-  projectId: "free-income-hub",
-  storageBucket: "free-income-hub.firebasestorage.app",
-  messagingSenderId: "198778189657",
-  appId: "1:198778189657:web:474e3d1ce693c0b344fe48",
-  measurementId: "G-754Q9CVG2B"
-};
+      apiKey: "AIzaSyBYcT_KxokNS5q6ozuCfZaIyR8qeKP6FnQ",
+      authDomain: "free-income-hub.firebaseapp.com",
+      databaseURL: "https://free-income-hub-default-rtdb.firebaseio.com",
+      projectId: "free-income-hub",
+      storageBucket: "free-income-hub.firebasestorage.app",
+      messagingSenderId: "198778189657",
+      appId: "1:198778189657:web:474e3d1ce693c0b344fe48",
+      measurementId: "G-754Q9CVG2B"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // User Identification (No Login)
     let userId = localStorage.getItem('free_income_uid') || 'ID' + Math.floor(100000 + Math.random() * 900000);
     localStorage.setItem('free_income_uid', userId);
-
     let currentBalance = 0;
+    let popupShown = false; // To show popup only once per load
 
     // Load Live Data
     function initApp() {
@@ -167,13 +198,27 @@
 
         db.ref('notice').on('value', (snap) => {
             const noticeBox = document.getElementById('notice');
-            if(snap.val()) {
-                noticeBox.innerText = snap.val();
+            const popupText = document.getElementById('popup-text');
+            const val = snap.val();
+            
+            if(val) {
+                noticeBox.innerText = val;
                 noticeBox.style.display = 'block';
+                
+                // Show Popup Notice suddenly when entering app
+                if(!popupShown) {
+                    popupText.innerText = val;
+                    document.getElementById('popup-notice-overlay').style.display = 'flex';
+                    popupShown = true;
+                }
             } else {
                 noticeBox.style.display = 'none';
             }
         });
+    }
+
+    function closePopup() {
+        document.getElementById('popup-notice-overlay').style.display = 'none';
     }
 
     function navClick(id) {
@@ -182,29 +227,38 @@
         document.getElementById(id).classList.add('active');
         document.getElementById('n-' + id).classList.add('active-nav');
     }
-
     function showSection(id) { navClick(id); }
 
-    // Earn Money Logic (Fixed Balance Issue)
+    // AD Watching Logic (10s Timer -> 5 Taka)
     function startAdTask() {
-        document.getElementById('timer-overlay').style.display = 'flex';
+        document.getElementById('ad-overlay').style.display = 'flex';
+        document.getElementById('ad-continue').style.display = 'none';
+        document.getElementById('ad-timer').style.display = 'block';
+        
         let count = 10;
+        document.getElementById('countdown').innerText = count;
+        
         let timer = setInterval(() => {
             count--;
             document.getElementById('countdown').innerText = count;
             if(count <= 0) {
                 clearInterval(timer);
-                document.getElementById('timer-overlay').style.display = 'none';
-                
-                // Update Balance in Firebase
-                db.ref('users/' + userId + '/balance').transaction((current) => {
-                    return (current || 0) + 20;
-                }).then(() => {
-                    alert("অভিনন্দন! আপনি ২০ টাকা পেয়েছেন।");
-                });
-                document.getElementById('countdown').innerText = "10";
+                document.getElementById('ad-timer').style.display = 'none';
+                document.getElementById('ad-continue').style.display = 'block'; // Show Continue Button
             }
         }, 1000);
+    }
+
+    // After clicking Continue
+    function finishAd() {
+        document.getElementById('ad-overlay').style.display = 'none';
+        
+        // Give 5 Taka
+        db.ref('users/' + userId + '/balance').transaction((current) => {
+            return (current || 0) + 5;
+        }).then(() => {
+            alert("সাকসেস! ৫ টাকা যোগ হয়েছে।");
+        });
     }
 
     // Daily Bonus Logic
@@ -224,25 +278,27 @@
         });
     }
 
-    // Withdraw Logic
+    // Withdraw Logic - Added Name and 1000 minimum limit
     function handleWithdraw() {
+        let userName = document.getElementById('userName').value.trim();
         let amount = parseInt(document.getElementById('amount').value);
-        let phone = document.getElementById('phone').value;
+        let phone = document.getElementById('phone').value.trim();
         let method = document.getElementById('method').value;
 
-        if(!phone || amount < 50) {
-            alert("সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ৫০ টাকা।");
-            return;
+        if(!userName) {
+            alert("অনুগ্রহ করে আপনার নাম লিখুন।"); return;
         }
-
+        if(!phone || amount < 1000) {
+            alert("সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ১০০০ টাকা।"); return;
+        }
         if(amount > currentBalance) {
-            alert("আপনার ব্যালেন্স পর্যাপ্ত নয়।");
-            return;
+            alert("আপনার ব্যালেন্স পর্যাপ্ত নয়।"); return;
         }
 
         // Add request to database
         db.ref('withdrawals').push({
             userId: userId,
+            userName: userName,
             amount: amount,
             phone: phone,
             method: method,
@@ -253,14 +309,16 @@
         // Deduct balance
         db.ref('users/' + userId).update({ balance: currentBalance - amount });
 
-        alert("আপনার উইথড্র সাকসেস!");
-        setTimeout(() => {
-            alert("২ ঘণ্টার মধ্যে আপনি পেমেন্ট পেয়ে যাবেন। আমাদের সাথেই থাকুন।");
-        }, 1500);
+        // Clear Inputs
+        document.getElementById('userName').value = '';
+        document.getElementById('amount').value = '';
+        document.getElementById('phone').value = '';
+
+        alert("আপনার উইথড্র রিকোয়েস্ট সাকসেস!");
     }
 
     initApp();
 </script>
 
 </body>
-</html>
+    </html>
