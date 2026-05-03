@@ -8,63 +8,128 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary-color: #2e7d32; --secondary-color: #4caf50; --bg-color: #f1f8e9; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: #333; }
+        :root { --primary-color: #2e7d32; --secondary-color: #4caf50; --bg-color: #f4f9f4; --dark-text: #2c3e50; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--dark-text); overflow-x: hidden; }
         
-        /* Header */
-        header { background: var(--primary-color); color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* Splash Screen */
+        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.5s ease; }
+        .splash-text { color: white; font-size: 40px; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); animation: bounceIn 1.5s ease infinite alternate; }
+        @keyframes bounceIn { 0% { transform: scale(0.9); } 100% { transform: scale(1.1); } }
 
-        /* Notice & Popup */
+        /* Header & Sidebar */
+        header { background: var(--primary-color); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .menu-btn { cursor: pointer; font-size: 24px; }
+        
+        #sidebar { position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 10001; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: 60px; }
+        #sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: none; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-item { padding: 15px 20px; border-bottom: 1px solid #eee; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--dark-text); }
+        .sidebar-item:hover { background: #f1f8e9; color: var(--primary-color); }
+        .close-sidebar { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #d32f2f; cursor: pointer; }
+
+        /* Notice & Modals */
         #notice { background: #fff; border-left: 5px solid #d32f2f; margin: 15px; padding: 12px; border-radius: 8px; font-size: 14px; color: #d32f2f; font-weight: 600; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #popup-notice-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
-        .popup-box { background: white; width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: scaleUp 0.3s ease; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 10002; padding: 20px; box-sizing: border-box; }
+        .modal-box { background: white; width: 100%; max-width: 350px; padding: 25px 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: scaleUp 0.3s ease; position: relative; }
         @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 20px; color: #888; cursor: pointer; }
 
         /* Balance Card */
-        .balance-card { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; margin: 20px; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3); }
+        .balance-card { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; margin: 15px; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3); position: relative; overflow: hidden; }
+        .balance-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: rgba(255,255,255,0.1); transform: rotate(30deg); }
         .balance-card h3 { margin: 0; font-size: 16px; opacity: 0.9; }
-        .balance-card h1 { margin: 10px 0; font-size: 42px; }
+        .balance-card h1 { margin: 10px 0; font-size: 45px; font-weight: 800; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
 
-        /* Main Section Container */
-        .content { padding: 10px 20px 100px 20px; }
-        .section { display: none; animation: fadeIn 0.5s ease; }
+        /* Sections */
+        .content { padding: 5px 15px 90px 15px; }
+        .section { display: none; animation: fadeIn 0.4s ease; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Buttons & Tasks */
-        .task-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border: 1px solid #e0e0e0; }
-        .task-info h4 { margin: 0; color: var(--primary-color); }
-        .btn-action { background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        /* Tasks */
+        .task-card { background: white; padding: 18px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: space-between; border: 1px solid #eef2ef; transition: transform 0.2s; }
+        .task-card:active { transform: scale(0.98); }
+        .task-info h4 { margin: 0 0 5px 0; color: var(--primary-color); font-size: 17px; }
+        .task-info p { margin: 0; font-size: 13px; color: #666; }
+        
+        .btn-action { background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 3px 6px rgba(46,125,50,0.2); }
         .btn-action:active { transform: scale(0.95); }
 
         /* Form Controls */
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        input, select { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; background: #fafafa; }
+        input:focus, select:focus { border-color: var(--primary-color); background: white; }
+
+        /* Verification Styling */
+        .verify-box { background: #fff3e0; border: 1px dashed #ff9800; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: left; }
+        .copy-wrap { display: flex; align-items: center; margin: 10px 0; }
+        .copy-wrap input { margin: 0; border-radius: 8px 0 0 8px; font-weight: bold; color: #d32f2f; border-right: none; }
+        .btn-copy { background: #ff9800; color: white; border: none; padding: 15px; border-radius: 0 8px 8px 0; cursor: pointer; font-weight: bold; }
 
         /* Bottom Nav */
-        .navbar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); border-top-left-radius: 20px; border-top-right-radius: 20px; }
-        .nav-item { text-align: center; color: #757575; cursor: pointer; font-size: 12px; transition: 0.3s; flex: 1; }
-        .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
+        .navbar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0 15px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-radius: 20px 20px 0 0; z-index: 1000; }
+        .nav-item { text-align: center; color: #9e9e9e; cursor: pointer; font-size: 12px; transition: 0.3s; flex: 1; font-weight: 600; }
+        .nav-item i { font-size: 22px; margin-bottom: 5px; display: block; transition: 0.3s; }
         .nav-item.active-nav { color: var(--primary-color); }
-
-        /* Ad Overlay */
-        #ad-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; display: none; flex-direction: column; z-index: 9999; }
-        .ad-container { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; overflow: hidden; }
-        .ad-footer { background: #f1f1f1; padding: 20px; text-align: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
-        .btn-continue { background: #000; color: #ccff00; border: none; padding: 15px 30px; font-size: 22px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; font-family: 'Arial Black', sans-serif; }
+        .nav-item.active-nav i { transform: translateY(-3px); }
     </style>
 </head>
 <body>
 
-<header>FREE INCOME</header>
+<!-- Splash Screen -->
+<div id="splash-screen">
+    <div class="splash-text">Free Income</div>
+</div>
+
+<header>
+    <i class="fas fa-bars menu-btn" onclick="toggleSidebar()"></i>
+    <span>FREE INCOME</span>
+    <div style="width: 24px;"></div>
+</header>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div id="sidebar">
+    <i class="fas fa-times close-sidebar" onclick="toggleSidebar()"></i>
+    <div class="sidebar-item" onclick="openVerifyModal()">
+        <span><i class="fas fa-user-check"></i> একাউন্ট ভেরিফাই করুন</span>
+        <span id="verify-status" style="font-size: 20px;">❌</span>
+    </div>
+    <div class="sidebar-item" onclick="window.location.href=supportLink">
+        <span><i class="fas fa-headset"></i> সাপোর্ট গ্রুপ</span>
+    </div>
+</div>
+
 <div id="notice"></div>
 
-<!-- Popup Notice -->
-<div id="popup-notice-overlay">
-    <div class="popup-box">
-        <i class="fas fa-bell" style="font-size: 40px; color: #f39c12; margin-bottom: 15px;"></i>
+<!-- Notice Popup -->
+<div id="popup-notice-overlay" class="modal-overlay">
+    <div class="modal-box">
+        <i class="fas fa-bell" style="font-size: 45px; color: #f39c12; margin-bottom: 15px;"></i>
         <h3 style="margin-top: 0;">গুরুত্বপূর্ণ নোটিশ</h3>
-        <p id="popup-text" style="color: #555; font-size: 15px;"></p>
-        <button class="btn-action" style="width: 100%; margin-top: 10px;" onclick="closePopup()">OK</button>
+        <p id="popup-text" style="color: #555; font-size: 15px; line-height:1.5;"></p>
+        <button class="btn-action" style="width: 100%; margin-top: 15px;" onclick="closeModal('popup-notice-overlay')">বুঝতে পেরেছি</button>
+    </div>
+</div>
+
+<!-- Verify Account Modal -->
+<div id="verify-modal" class="modal-overlay">
+    <div class="modal-box">
+        <i class="fas fa-times close-modal" onclick="closeModal('verify-modal')"></i>
+        <h3 style="color: #d32f2f; margin-top:0;">একাউন্ট ভেরিফাই</h3>
+        <p style="font-size: 14px; color: #555;">১০০ টাকা ফি দিয়ে একাউন্ট ভেরিফাই করুন এবং আনলিমিটেড ইনকাম করুন!</p>
+        
+        <div class="verify-box">
+            <p style="margin:0 0 5px 0; font-size: 13px; font-weight:bold;">নগদ সেন্ট মানি (Send Money):</p>
+            <div class="copy-wrap">
+                <input type="text" id="nagad-number" value="01327789835" readonly>
+                <button class="btn-copy" onclick="copyNumber()"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+            <p style="margin:5px 0 0 0; font-size: 12px; color: #666;">উপরের নাম্বারে ১০০ টাকা পাঠিয়ে Transaction ID নিচে দিন।</p>
+        </div>
+
+        <input type="text" id="trxId" placeholder="Transaction ID লিখুন (TrxID)">
+        <button class="btn-action" style="width: 100%; margin-top: 10px; background: #ff9800;" onclick="submitVerification()">ভেরিফাই কনফার্ম করুন</button>
     </div>
 </div>
 
@@ -74,12 +139,12 @@
         <div class="balance-card">
             <h3>Current Balance</h3>
             <h1>৳ <span id="user-balance">0</span></h1>
-            <p>আপনার অ্যাকাউন্টটি সুরক্ষিত আছে</p>
+            <p style="margin-bottom:0; opacity: 0.8; font-size: 13px;"><i class="fas fa-shield-alt"></i> আপনার অ্যাকাউন্টটি সুরক্ষিত আছে</p>
         </div>
         <div class="task-card">
             <div class="task-info">
                 <h4>Daily Reward</h4>
-                <p>ক্লিক করে প্রতিদিন ১০ টাকা নিন</p>
+                <p id="bonus-text-ui">ক্লিক করে প্রতিদিন ১০ টাকা নিন</p>
             </div>
             <button class="btn-action" onclick="showSection('bonus')">Claim</button>
         </div>
@@ -87,14 +152,13 @@
 
     <!-- Earn Section -->
     <div id="earn" class="section">
-        <h3 style="color:var(--primary-color)">Earning Tasks</h3>
+        <h3 style="color:var(--primary-color); margin-bottom: 15px;"><i class="fas fa-bolt"></i> Earning Tasks</h3>
         <div class="task-card">
             <div class="task-info">
                 <h4>এড দেখে ইনকাম</h4>
-                <p>১০ সেকেন্ড অ্যাড দেখুন = ৫ টাকা</p>
+                <p id="ad-text-ui">অ্যাড এ ক্লিক করুন = ৫ টাকা</p>
             </div>
-            <!-- Watch Ad in English -->
-            <button class="btn-action" onclick="startAdTask()">Watch Ad</button>
+            <button class="btn-action" onclick="startInstantAdTask()">Watch Ad</button>
         </div>
         <div class="task-card">
             <div class="task-info">
@@ -107,28 +171,26 @@
 
     <!-- Bonus Section -->
     <div id="bonus" class="section">
-        <div class="balance-card" style="background: #558b2f;">
-            <i class="fas fa-gift" style="font-size: 50px;"></i>
-            <h2>ডেইলি বোনাস</h2>
-            <button class="btn-action" style="background:white; color:#558b2f; width:100%" onclick="claimBonus()">বোনাস সংগ্রহ করুন</button>
+        <div class="balance-card" style="background: linear-gradient(135deg, #558b2f, #7cb342);">
+            <i class="fas fa-gift" style="font-size: 50px; margin-bottom: 10px;"></i>
+            <h2 style="margin:0 0 15px 0;">ডেইলি বোনাস</h2>
+            <button class="btn-action" id="bonus-btn-ui" style="background:white; color:#558b2f; width:100%; font-size: 16px;" onclick="claimBonus()">বোনাস সংগ্রহ করুন</button>
         </div>
     </div>
 
     <!-- Withdraw Section -->
     <div id="withdraw" class="section">
         <div class="task-card" style="display:block">
-            <h4 style="margin-bottom:15px">টাকা উত্তোলন করুন</h4>
+            <h4 style="margin-bottom:15px; font-size: 18px;"><i class="fas fa-money-check-alt"></i> টাকা উত্তোলন করুন</h4>
             <select id="method">
                 <option value="Bkash">Bkash (বিকাশ)</option>
                 <option value="Nagad">Nagad (নগদ)</option>
                 <option value="Rocket">Rocket (রকেট)</option>
             </select>
-            <!-- Name Field Added -->
             <input type="text" id="userName" placeholder="আপনার পুরো নাম">
-            <!-- Minimum 1000 -->
-            <input type="number" id="amount" placeholder="টাকার পরিমাণ (মিনিমাম ১০০০)">
+            <input type="number" id="amount" placeholder="টাকার পরিমাণ">
             <input type="text" id="phone" placeholder="আপনার একাউন্ট নাম্বার">
-            <button class="btn-action" style="width:100%; margin-top:10px" onclick="handleWithdraw()">উইথড্র রিকোয়েস্ট পাঠান</button>
+            <button class="btn-action" style="width:100%; margin-top:15px; font-size: 16px;" onclick="handleWithdraw()">উইথড্র রিকোয়েস্ট পাঠান</button>
         </div>
     </div>
 </div>
@@ -137,35 +199,13 @@
 <div class="navbar">
     <div class="nav-item active-nav" id="n-home" onclick="navClick('home')"><i class="fas fa-home"></i>হোম</div>
     <div class="nav-item" id="n-earn" onclick="navClick('earn')"><i class="fas fa-money-bill-wave"></i>আর্ন</div>
-    <!-- Support Links updated -->
-    <div class="nav-item" onclick="window.location.href='https://t.me/Balamofficial'"><i class="fas fa-headset"></i>সাপোর্ট</div>
+    <div class="nav-item" onclick="openSupport()"><i class="fas fa-headset"></i>সাপোর্ট</div>
     <div class="nav-item" id="n-bonus" onclick="navClick('bonus')"><i class="fas fa-gift"></i>বোনাস</div>
     <div class="nav-item" id="n-withdraw" onclick="navClick('withdraw')"><i class="fas fa-wallet"></i>উইথড্র</div>
 </div>
 
-<!-- Ad Overlay Fullscreen -->
-<div id="ad-overlay">
-    <div class="ad-container">
-        <!-- Ad Network Code -->
-        <script>
-            atOptions = {
-              'key' : 'f5a8d3ec6945fc213f03073db24c8588',
-              'format' : 'iframe',
-              'height' : 600,
-              'width' : 160,
-              'params' : {}
-            };
-        </script>
-        <script src="https://www.highperformanceformat.com/f5a8d3ec6945fc213f03073db24c8588/invoke.js"></script>
-    </div>
-    <div class="ad-footer">
-        <h2 id="ad-timer" style="color: red; margin:0;">Wait <span id="countdown">10</span>s...</h2>
-        <button id="ad-continue" class="btn-continue" style="display:none;" onclick="finishAd()">কন্টিনিউ</button>
-    </div>
-</div>
-
 <script>
-    // Firebase Configuration (Unchanged)
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBYcT_KxokNS5q6ozuCfZaIyR8qeKP6FnQ",
       authDomain: "free-income-hub.firebaseapp.com",
@@ -173,29 +213,69 @@
       projectId: "free-income-hub",
       storageBucket: "free-income-hub.firebasestorage.app",
       messagingSenderId: "198778189657",
-      appId: "1:198778189657:web:474e3d1ce693c0b344fe48",
-      measurementId: "G-754Q9CVG2B"
+      appId: "1:198778189657:web:474e3d1ce693c0b344fe48"
     };
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
     let userId = localStorage.getItem('free_income_uid') || 'ID' + Math.floor(100000 + Math.random() * 900000);
     localStorage.setItem('free_income_uid', userId);
+    
     let currentBalance = 0;
-    let popupShown = false; // To show popup only once per load
+    let isVerified = false;
+    let popupShown = false; 
 
-    // Load Live Data
+    // Dynamic Variables (Managed by Admin)
+    let minWithdrawLimit = 1000;
+    let supportLink = "https://www.facebook.com/balam.vedio";
+    let bonusAmount = 10;
+    let adAmount = 5;
+
+    // Splash Screen Setup
+    setTimeout(() => {
+        document.getElementById('splash-screen').style.opacity = '0';
+        setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 500);
+    }, 2000);
+
     function initApp() {
+        // Load User Data
         db.ref('users/' + userId).on('value', (snap) => {
             const data = snap.val();
             if(data) {
                 currentBalance = data.balance || 0;
+                isVerified = data.isVerified || false;
                 document.getElementById('user-balance').innerText = currentBalance;
+                document.getElementById('verify-status').innerText = isVerified ? "✅" : "❌";
             } else {
-                db.ref('users/' + userId).set({ balance: 0, lastBonus: "" });
+                // Initialize new user
+                db.ref('users/' + userId).set({ balance: 0, lastBonus: "", isVerified: false });
             }
         });
 
+        // Load Admin Settings Dynamically
+        db.ref('settings').on('value', (snap) => {
+            const set = snap.val();
+            if(set) {
+                if(set.minWithdraw) {
+                    minWithdrawLimit = parseInt(set.minWithdraw);
+                    document.getElementById('amount').placeholder = `টাকার পরিমাণ (মিনিমাম ${minWithdrawLimit})`;
+                }
+                if(set.supportLink) supportLink = set.supportLink;
+                
+                // Dynamic Bonus and Ad amounts update
+                if(set.bonusAmount) {
+                    bonusAmount = parseInt(set.bonusAmount);
+                    document.getElementById('bonus-text-ui').innerText = `ক্লিক করে প্রতিদিন ${bonusAmount} টাকা নিন`;
+                    document.getElementById('bonus-btn-ui').innerText = `${bonusAmount} টাকা বোনাস সংগ্রহ করুন`;
+                }
+                if(set.adAmount) {
+                    adAmount = parseInt(set.adAmount);
+                    document.getElementById('ad-text-ui').innerText = `অ্যাড এ ক্লিক করুন = ${adAmount} টাকা`;
+                }
+            }
+        });
+
+        // Load Notice
         db.ref('notice').on('value', (snap) => {
             const noticeBox = document.getElementById('notice');
             const popupText = document.getElementById('popup-text');
@@ -204,8 +284,6 @@
             if(val) {
                 noticeBox.innerText = val;
                 noticeBox.style.display = 'block';
-                
-                // Show Popup Notice suddenly when entering app
                 if(!popupShown) {
                     popupText.innerText = val;
                     document.getElementById('popup-notice-overlay').style.display = 'flex';
@@ -217,108 +295,82 @@
         });
     }
 
-    function closePopup() {
-        document.getElementById('popup-notice-overlay').style.display = 'none';
-    }
-
+    // Navigations & Modal Handlers
     function navClick(id) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
         document.getElementById(id).classList.add('active');
         document.getElementById('n-' + id).classList.add('active-nav');
+        document.getElementById('sidebar').classList.remove('active');
+        document.querySelector('.sidebar-overlay').classList.remove('active');
     }
     function showSection(id) { navClick(id); }
-
-    // AD Watching Logic (10s Timer -> 5 Taka)
-    function startAdTask() {
-        document.getElementById('ad-overlay').style.display = 'flex';
-        document.getElementById('ad-continue').style.display = 'none';
-        document.getElementById('ad-timer').style.display = 'block';
-        
-        let count = 10;
-        document.getElementById('countdown').innerText = count;
-        
-        let timer = setInterval(() => {
-            count--;
-            document.getElementById('countdown').innerText = count;
-            if(count <= 0) {
-                clearInterval(timer);
-                document.getElementById('ad-timer').style.display = 'none';
-                document.getElementById('ad-continue').style.display = 'block'; // Show Continue Button
-            }
-        }, 1000);
+    function openSupport() { window.location.href = supportLink; }
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
+    function openVerifyModal() {
+        toggleSidebar();
+        if(isVerified) { alert("আপনার একাউন্ট ইতিমধ্যে ভেরিফাই করা আছে!"); return; }
+        document.getElementById('verify-modal').style.display = 'flex';
     }
 
-    // After clicking Continue
-    function finishAd() {
-        document.getElementById('ad-overlay').style.display = 'none';
-        
-        // Give 5 Taka
-        db.ref('users/' + userId + '/balance').transaction((current) => {
-            return (current || 0) + 5;
-        }).then(() => {
-            alert("সাকসেস! ৫ টাকা যোগ হয়েছে।");
+    function copyNumber() {
+        const num = document.getElementById('nagad-number');
+        num.select(); num.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(num.value);
+        alert("নাম্বার কপি করা হয়েছে: " + num.value);
+    }
+
+    function submitVerification() {
+        let trxId = document.getElementById('trxId').value.trim();
+        if(!trxId) { alert("দয়া করে Transaction ID দিন!"); return; }
+
+        db.ref('users/' + userId).update({ isVerified: true, verifyTrxId: trxId }).then(() => {
+            closeModal('verify-modal');
+            alert("✅ অভিনন্দন! আপনার একাউন্ট ভেরিফাই হয়ে গেছে।");
         });
     }
 
-    // Daily Bonus Logic
+    // INSTANT AD EARNING (Dynamic Ad Amount)
+    function startInstantAdTask() {
+        db.ref('users/' + userId + '/balance').transaction((current) => {
+            return (current || 0) + adAmount;
+        }).then(() => {
+            alert(`✅ ${adAmount} টাকা ব্যালেন্সে যোগ হয়েছে!`);
+            window.location.href = "https://www.profitablecpmratenetwork.com/krb8sq6kv?key=d24b12adad1932001398d137c9e6fa0c";
+        }).catch(err => {
+            alert("সমস্যা হয়েছে! ইন্টারনেট সংযোগ চেক করুন।");
+        });
+    }
+
+    // 100% RELIABLE DAILY BONUS (Transaction Used for bug fix)
     function claimBonus() {
         let today = new Date().toDateString();
-        db.ref('users/' + userId).once('value', (snap) => {
-            let data = snap.val();
-            if(data.lastBonus === today) {
-                alert("দুঃখিত! আপনি আজকের বোনাস নিয়ে ফেলেছেন। আগামীকাল আবার চেষ্টা করুন।");
+        
+        db.ref('users/' + userId).transaction((userData) => {
+            if (userData) {
+                // If user already took bonus today, abort transaction
+                if (userData.lastBonus === today) { return; }
+                
+                userData.balance = (userData.balance || 0) + bonusAmount;
+                userData.lastBonus = today;
+            }
+            return userData;
+        }, (error, committed, snapshot) => {
+            if (error) {
+                alert("সার্ভার সমস্যা! আবার চেষ্টা করুন।");
+            } else if (!committed) {
+                alert("দুঃখিত! আপনি আজকের বোনাস ইতিমধ্যে নিয়ে ফেলেছেন। আগামীকাল আবার চেষ্টা করুন।");
             } else {
-                db.ref('users/' + userId).update({
-                    balance: currentBalance + 10,
-                    lastBonus: today
-                });
-                alert("সফল! আপনার একাউন্টে ১০ টাকা বোনাস যোগ করা হয়েছে।");
+                alert(`সফল! আপনার একাউন্টে ${bonusAmount} টাকা বোনাস যোগ করা হয়েছে।`);
             }
         });
     }
 
-    // Withdraw Logic - Added Name and 1000 minimum limit
+    // Withdraw Request (Dynamic Minimum)
     function handleWithdraw() {
-        let userName = document.getElementById('userName').value.trim();
-        let amount = parseInt(document.getElementById('amount').value);
-        let phone = document.getElementById('phone').value.trim();
-        let method = document.getElementById('method').value;
-
-        if(!userName) {
-            alert("অনুগ্রহ করে আপনার নাম লিখুন।"); return;
-        }
-        if(!phone || amount < 1000) {
-            alert("সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ১০০০ টাকা।"); return;
-        }
-        if(amount > currentBalance) {
-            alert("আপনার ব্যালেন্স পর্যাপ্ত নয়।"); return;
-        }
-
-        // Add request to database
-        db.ref('withdrawals').push({
-            userId: userId,
-            userName: userName,
-            amount: amount,
-            phone: phone,
-            method: method,
-            status: 'pending',
-            time: new Date().toLocaleString()
-        });
-
-        // Deduct balance
-        db.ref('users/' + userId).update({ balance: currentBalance - amount });
-
-        // Clear Inputs
-        document.getElementById('userName').value = '';
-        document.getElementById('amount').value = '';
-        document.getElementById('phone').value = '';
-
-        alert("আপনার উইথড্র রিকোয়েস্ট সাকসেস!");
-    }
-
-    initApp();
-</script>
-
-</body>
-    </html>
+ 
