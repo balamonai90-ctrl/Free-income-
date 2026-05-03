@@ -11,11 +11,7 @@
         :root { --primary-color: #2e7d32; --secondary-color: #4caf50; --bg-color: #f4f9f4; --dark-text: #2c3e50; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--dark-text); overflow-x: hidden; }
         
-        /* Splash Screen */
-        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.5s ease; }
-        .splash-text { color: white; font-size: 40px; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); animation: bounceIn 1.5s ease infinite alternate; }
-        @keyframes bounceIn { 0% { transform: scale(0.9); } 100% { transform: scale(1.1); } }
-
+      
         /* Header & Sidebar */
         header { background: var(--primary-color); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
         .menu-btn { cursor: pointer; font-size: 24px; }
@@ -373,4 +369,13 @@
 
     // Withdraw Request (Dynamic Minimum)
     function handleWithdraw() {
- 
+        let userName = document.getElementById('userName').value.trim();
+        let amount = parseInt(document.getElementById('amount').value);
+        let phone = document.getElementById('phone').value.trim();
+        let method = document.getElementById('method').value;
+
+        if(!userName) { alert("অনুগ্রহ করে আপনার নাম লিখুন।"); return; }
+        if(!phone || isNaN(amount) || amount < minWithdrawLimit) {
+            alert(`সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ${minWithdrawLimit} টাকা।`); return;
+        }
+        if(amount > currentBalance) { alert("আপনা
