@@ -10,8 +10,7 @@
     <style>
         :root { --primary-color: #2e7d32; --secondary-color: #4caf50; --bg-color: #f4f9f4; --dark-text: #2c3e50; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--dark-text); overflow-x: hidden; }
-        
-      
+
         /* Header & Sidebar */
         header { background: var(--primary-color); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; font-weight: bold; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
         .menu-btn { cursor: pointer; font-size: 24px; }
@@ -71,11 +70,6 @@
     </style>
 </head>
 <body>
-
-<!-- Splash Screen -->
-<div id="splash-screen">
-    <div class="splash-text">Free Income</div>
-</div>
 
 <header>
     <i class="fas fa-bars menu-btn" onclick="toggleSidebar()"></i>
@@ -142,7 +136,7 @@
                 <h4>Daily Reward</h4>
                 <p id="bonus-text-ui">ক্লিক করে প্রতিদিন ১০ টাকা নিন</p>
             </div>
-            <button class="btn-action" onclick="showSection('bonus')">Claim</button>
+            <button class="btn-action" onclick="claimBonus()">Claim</button>
         </div>
     </div>
 
@@ -154,6 +148,7 @@
                 <h4>এড দেখে ইনকাম</h4>
                 <p id="ad-text-ui">অ্যাড এ ক্লিক করুন = ৫ টাকা</p>
             </div>
+            <!-- Ad Button modified to not show immediate alert -->
             <button class="btn-action" onclick="startInstantAdTask()">Watch Ad</button>
         </div>
         <div class="task-card">
@@ -203,14 +198,15 @@
 <script>
     // Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyBYcT_KxokNS5q6ozuCfZaIyR8qeKP6FnQ",
-      authDomain: "free-income-hub.firebaseapp.com",
-      databaseURL: "https://free-income-hub-default-rtdb.firebaseio.com",
-      projectId: "free-income-hub",
-      storageBucket: "free-income-hub.firebasestorage.app",
-      messagingSenderId: "198778189657",
-      appId: "1:198778189657:web:474e3d1ce693c0b344fe48"
-    };
+  apiKey: "AIzaSyCf_RKMkpvfTn-0LyqI-fmgdLptxyt585U",
+  authDomain: "reward-income-169dc.firebaseapp.com",
+  databaseURL: "https://reward-income-169dc-default-rtdb.firebaseio.com",
+  projectId: "reward-income-169dc",
+  storageBucket: "reward-income-169dc.firebasestorage.app",
+  messagingSenderId: "943292483858",
+  appId: "1:943292483858:web:80f6de137ea63a31160bcb",
+  measurementId: "G-76FK3Q7CDV"
+};
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
@@ -227,12 +223,6 @@
     let bonusAmount = 10;
     let adAmount = 5;
 
-    // Splash Screen Setup
-    setTimeout(() => {
-        document.getElementById('splash-screen').style.opacity = '0';
-        setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 500);
-    }, 2000);
-
     function initApp() {
         // Load User Data
         db.ref('users/' + userId).on('value', (snap) => {
@@ -243,12 +233,11 @@
                 document.getElementById('user-balance').innerText = currentBalance;
                 document.getElementById('verify-status').innerText = isVerified ? "✅" : "❌";
             } else {
-                // Initialize new user
                 db.ref('users/' + userId).set({ balance: 0, lastBonus: "", isVerified: false });
             }
         });
 
-        // Load Admin Settings Dynamically
+        // Load Admin Settings
         db.ref('settings').on('value', (snap) => {
             const set = snap.val();
             if(set) {
@@ -258,7 +247,6 @@
                 }
                 if(set.supportLink) supportLink = set.supportLink;
                 
-                // Dynamic Bonus and Ad amounts update
                 if(set.bonusAmount) {
                     bonusAmount = parseInt(set.bonusAmount);
                     document.getElementById('bonus-text-ui').innerText = `ক্লিক করে প্রতিদিন ${bonusAmount} টাকা নিন`;
@@ -276,7 +264,6 @@
             const noticeBox = document.getElementById('notice');
             const popupText = document.getElementById('popup-text');
             const val = snap.val();
-            
             if(val) {
                 noticeBox.innerText = val;
                 noticeBox.style.display = 'block';
@@ -285,9 +272,7 @@
                     document.getElementById('popup-notice-overlay').style.display = 'flex';
                     popupShown = true;
                 }
-            } else {
-                noticeBox.style.display = 'none';
-            }
+            } else { noticeBox.style.display = 'none'; }
         });
     }
 
@@ -324,58 +309,67 @@
     function submitVerification() {
         let trxId = document.getElementById('trxId').value.trim();
         if(!trxId) { alert("দয়া করে Transaction ID দিন!"); return; }
-
         db.ref('users/' + userId).update({ isVerified: true, verifyTrxId: trxId }).then(() => {
             closeModal('verify-modal');
             alert("✅ অভিনন্দন! আপনার একাউন্ট ভেরিফাই হয়ে গেছে।");
         });
     }
 
-    // INSTANT AD EARNING (Dynamic Ad Amount)
+    /* -------------------------------------------
+       AD LOGIC (Reward on return)
+    --------------------------------------------- */
     function startInstantAdTask() {
-        db.ref('users/' + userId + '/balance').transaction((current) => {
-            return (current || 0) + adAmount;
-        }).then(() => {
-            alert(`✅ ${adAmount} টাকা ব্যালেন্সে যোগ হয়েছে!`);
-            window.location.href = "https://www.profitablecpmratenetwork.com/krb8sq6kv?key=d24b12adad1932001398d137c9e6fa0c";
-        }).catch(err => {
-            alert("সমস্যা হয়েছে! ইন্টারনেট সংযোগ চেক করুন।");
-        });
+        // একটি সিগন্যাল সেভ করে রাখছি যে ইউজার এড দেখতে গেছে
+        localStorage.setItem('pending_ad_reward', 'true');
+        // সরাসরি লিংকে নিয়ে যাচ্ছি (কোনো এলার্ট ছাড়া)
+        window.location.href = "https://www.profitablecpmratenetwork.com/krb8sq6kv?key=d24b12adad1932001398d137c9e6fa0c";
     }
 
-    // 100% RELIABLE DAILY BONUS (Transaction Used for bug fix)
+    function processPendingReward() {
+        if(localStorage.getItem('pending_ad_reward') === 'true') {
+            // সাথে সাথে রিমুভ করে দিচ্ছি যাতে বারবার টাকা অ্যাড না হয়
+            localStorage.removeItem('pending_ad_reward');
+            
+            // ডাটাবেস থেকে এডের টাকা কত সেট করা আছে তা নিয়ে আসছি
+            db.ref('settings/adAmount').once('value').then(snap => {
+                let rewardAmt = snap.val() ? parseInt(snap.val()) : 5;
+                
+                db.ref('users/' + userId).once('value').then(userSnap => {
+                    let uData = userSnap.val() || {};
+                    let currentBal = uData.balance || 0;
+                    
+                    db.ref('users/' + userId).update({
+                        balance: currentBal + rewardAmt
+                    }).then(() => {
+                        alert(`✅ আপনার ব্যালেন্সে ${rewardAmt} টাকা যোগ হয়েছে!`);
+                    });
+                });
+            });
+        }
+    }
+
+    window.onload = () => { processPendingReward(); };
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') { processPendingReward(); }
+    });
+    window.addEventListener('focus', () => { processPendingReward(); });
+
+    /* -------------------------------------------
+       FIXED DAILY BONUS LOGIC
+    --------------------------------------------- */
     function claimBonus() {
         let today = new Date().toDateString();
         
-        db.ref('users/' + userId).transaction((userData) => {
-            if (userData) {
-                // If user already took bonus today, abort transaction
-                if (userData.lastBonus === today) { return; }
-                
-                userData.balance = (userData.balance || 0) + bonusAmount;
-                userData.lastBonus = today;
-            }
-            return userData;
-        }, (error, committed, snapshot) => {
-            if (error) {
-                alert("সার্ভার সমস্যা! আবার চেষ্টা করুন।");
-            } else if (!committed) {
+        db.ref('users/' + userId).once('value').then((snap) => {
+            let data = snap.val() || {};
+            
+            // চেক করা হচ্ছে আজকের তারিখে বোনাস নেওয়া হয়েছে কিনা
+            if (data.lastBonus === today) {
                 alert("দুঃখিত! আপনি আজকের বোনাস ইতিমধ্যে নিয়ে ফেলেছেন। আগামীকাল আবার চেষ্টা করুন।");
             } else {
-                alert(`সফল! আপনার একাউন্টে ${bonusAmount} টাকা বোনাস যোগ করা হয়েছে।`);
-            }
-        });
-    }
-
-    // Withdraw Request (Dynamic Minimum)
-    function handleWithdraw() {
-        let userName = document.getElementById('userName').value.trim();
-        let amount = parseInt(document.getElementById('amount').value);
-        let phone = document.getElementById('phone').value.trim();
-        let method = document.getElementById('method').value;
-
-        if(!userName) { alert("অনুগ্রহ করে আপনার নাম লিখুন।"); return; }
-        if(!phone || isNaN(amount) || amount < minWithdrawLimit) {
-            alert(`সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ${minWithdrawLimit} টাকা।`); return;
-        }
-        if(amount > currentBalance) { alert("আপনা
+                let currentBal = data.balance || 0;
+                let newBalance = currentBal + bonusAmount;
+                
+                // ডেটাবেসে আপডেট
+                db.ref('users/' + userId).update({
+                    ba
