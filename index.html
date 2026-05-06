@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -372,4 +373,42 @@
                 
                 // ডেটাবেসে আপডেট
                 db.ref('users/' + userId).update({
-                    ba
+                    balance: newBalance,
+                    lastBonus: today
+                }).then(() => {
+                    alert(`সফল! আপনার একাউন্টে ${bonusAmount} টাকা বোনাস যোগ করা হয়েছে।`);
+                }).catch((error) => {
+                    alert("সার্ভার সমস্যা! আপনার ইন্টারনেট কানেকশন চেক করুন।");
+                });
+            }
+        });
+    }
+
+    // Withdraw Request
+    function handleWithdraw() {
+        let userName = document.getElementById('userName').value.trim();
+        let amount = parseInt(document.getElementById('amount').value);
+        let phone = document.getElementById('phone').value.trim();
+        let method = document.getElementById('method').value;
+
+        if(!userName) { alert("অনুগ্রহ করে আপনার নাম লিখুন।"); return; }
+        if(!phone || isNaN(amount) || amount < minWithdrawLimit) {
+            alert(`সঠিক তথ্য দিন। সর্বনিম্ন উত্তোলন ${minWithdrawLimit} টাকা।`); return;
+        }
+        if(amount > currentBalance) { alert("আপনার ব্যালেন্স পর্যাপ্ত নয়।"); return; }
+
+        db.ref('withdrawals').push({
+            userId: userId, userName: userName, amount: amount, phone: phone, method: method,
+            status: 'pending', time: new Date().toLocaleString()
+        });
+
+        db.ref('users/' + userId).update({ balance: currentBalance - amount });
+        document.getElementById('userName').value = ''; document.getElementById('amount').value = ''; document.getElementById('phone').value = '';
+        alert("আপনার উইথড্র রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!");
+    }
+
+    initApp();
+</script>
+</body>
+</html>
+    
